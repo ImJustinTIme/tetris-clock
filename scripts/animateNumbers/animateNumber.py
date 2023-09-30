@@ -1,5 +1,11 @@
 from PIL import Image
-N6 = open('../../onDevice/bmps/N6A.bmp', "rb")
+import numpy as np
+import math as mt
+from colorama import Back
+N6 = open('../../onDevice/bmps/N7A.bmp', "rb")
+
+BOARD_WIDTH = 14
+BOARD_HEIGHT = 42
 
 def checkPosition(imgMapList, position, numbers):
         if len(imgMapList) > position:
@@ -9,7 +15,7 @@ def checkPosition(imgMapList, position, numbers):
 
 def checkForShape(colorNumbers ,imgMapList, startPoint, shapeList, checkPoints):
     if all([checkPosition(imgMapList, startPoint + point, colorNumbers) for point in checkPoints]):
-        shapeList.append((colorNumbers ,[startPoint + shapePoint for shapePoint in checkPoints]))    
+        shapeList.append((colorNumbers[0] , [startPoint + shapePoint for shapePoint in checkPoints]))    
         
 
 def findSShape(imgMapList, startPoint, shapeList):
@@ -30,10 +36,11 @@ def findLShape(imgMapList, startPoint, shapeList):
             checkForShape([3], imgMapList, startPoint, shapeList, [0, 14, 13, 12])
             checkForShape([3], imgMapList, startPoint, shapeList, [0, 1, 2, 14])
             checkForShape([3], imgMapList, startPoint, shapeList, [0, 1, 15, 29])
+            
 def findZShape(imgMapList, startPoint, shapeList):
         if checkPosition(imgMapList, startPoint, [4]):
-            checkForShape([8,1], imgMapList, startPoint, shapeList, [0, 1, 15, 16])
-            checkForShape([8,1], imgMapList, startPoint, shapeList, [0, 14, 13, 27])
+            checkForShape([4], imgMapList, startPoint, shapeList, [0, 1, 15, 16])
+            checkForShape([4], imgMapList, startPoint, shapeList, [0, 14, 13, 27])
 
 def findIShape(imgMapList, startPoint, shapeList):
         if checkPosition(imgMapList, startPoint, [2]):
@@ -49,9 +56,43 @@ def findTShape(imgMapList, startPoint, shapeList):
             checkForShape([6], imgMapList, startPoint, shapeList, [0, 1, 2, 15])
             checkForShape([6], imgMapList, startPoint, shapeList, [0, 14, 15, 28])   
             checkForShape([6], imgMapList, startPoint, shapeList, [0, 14, 13, 15])   
-            checkForShape([6], imgMapList, startPoint, shapeList, [0, 14, 13, 28])   
+            checkForShape([6], imgMapList, startPoint, shapeList, [0, 14, 13, 28])
 
-        
+def getColor(number):
+      match number:
+            case 5:
+                return Back.GREEN
+            case 8:
+                return Back.BLUE
+            case 3:
+                return Back.WHITE
+            case 4:
+                return Back.RED
+            case 2:
+                return Back.CYAN
+            case 7:
+                return Back.YELLOW
+            case 6:
+                return Back.MAGENTA
+            case 0:
+                return Back.BLACK            
+
+def buildStartingGrid(shapeList):
+        workingArr = np.zeros((BOARD_HEIGHT, BOARD_WIDTH))
+        for [color, shape] in shapeList:
+                for point in shape:
+                      x = mt.trunc(point / BOARD_WIDTH)
+                      y = point - (x * BOARD_WIDTH)
+                      workingArr[x][y] = color
+        return workingArr
+
+def printTetris(arr2d):
+      for line in arr2d:
+                str = f'{Back.BLACK}|'
+                for block in line:
+                        str += f'{getColor(block)}_|'
+                print(str)  
+
 im = Image.open(N6)
 SShape = 5
 JShape = [8, 1]
@@ -74,7 +115,5 @@ for index, imagePixel in enumerate(imList):
             findOShape(imList, index, shapeList)
             findTShape(imList, index, shapeList)
 
-
-print(shapeList)
-print(len(shapeList))
-im.show()
+arr2d = buildStartingGrid(shapeList)
+printTetris(arr2d)
