@@ -1,18 +1,30 @@
-import board, displayio, terminalio, adafruit_imageload, time, sys
-from adafruit_matrixportal.matrix import Matrix
-
-sys.path.insert(0, '/clockFace/')
-
 from clockFace.basic_test import BasicTest
 from clockFace.animation_test import AnimationTest
+from clockFace.digit_test import DigitTest
+from clockFace.clock_v1 import ClockV1
 
-matrix = Matrix(width=64, height=64 )
+import board, displayio, terminalio, adafruit_imageload, time, sys
+from adafruit_matrixportal.matrix import Matrix
+from adafruit_matrixportal.network import Network
+
+sys.path.insert(0, "/clockFace/")
+
+
+try:
+    from secrets import secrets
+except ImportError:
+    print("WiFi secrets are kept in secrets.py, please add them there!")
+    raise
+
+print("Time will be set for {}".format(secrets["timezone"]))
+network = Network(status_neopixel=board.NEOPIXEL, debug=False)
+matrix = Matrix(width=64, height=64)
 display = matrix.display
 group = displayio.Group()
 
-#BasicTest(group, display, matrix)
-AnimationTest(group, display, matrix)
-
+# BasicTest(group, display, matrix, network)
+ClockV1(group, display, matrix, network)
+# DigitTest(group, display, matrix, network);
 # parrot_bit, parrot_pal = adafruit_imageload.load("/partyParrotsTweet.bmp",
 #                                                  bitmap=displayio.Bitmap,
 #                                                  palette=displayio.Palette)

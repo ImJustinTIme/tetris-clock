@@ -16,75 +16,130 @@ frame_count = 0
 frame_duration = DEFAULT_FRAME_DURATION
 TILE_HEIGHT = 42
 
+sprites = {}
+currentTime = []
 
-def initiate_bmps(sprite_group):
-        """
-        Load an image as a sprite
-        """
-        # pylint: disable=global-statement
-        global current_frame, current_loop, frame_count, frame_duration
-        while sprite_group:
-            sprite_group.pop()
 
-        #CA = open('/bmps/CA.bmp', 'rb')
-        #N0 = open('/bmps/N0A.bmp', 'rb')
-        #N1 = open('/bmps/N1A.bmp', 'rb')
-        N2 = open('/bmps/N2A.bmp', "rb")
-        #N3 = open('/bmps/N3A.bmp', "rb")
-        #N4 = open('/bmps/N4A.bmp', "rb")
-        #N5 = open('/bmps/N5A.bmp', "rb")
-        N6 = open('/bmps/N6A.bmp', "rb")
-        #N7 = open('/bmps/N7A.bmp', 'rb')
-        #N8 = open('/bmps/N8A.bmp', 'rb')
-        #N9 = open('/bmps/N9A.bmp', 'rb')
+def initiate_bmps(sprite_group, timeLib):
+    """
+    Load an image as a sprite
+    """
+    # pylint: disable=global-statement
+    global current_frame, current_loop, frame_count, frame_duration
+    while sprite_group:
+        sprite_group.pop()
 
-        # CircuitPython 6 & 7 compatible
-        bitmap = displayio.OnDiskBitmap(N2)
-        print('hello')
-        sprite = displayio.TileGrid(
-            bitmap,
-            pixel_shader=getattr(bitmap, 'pixel_shader', displayio.ColorConverter()),
-            tile_width=bitmap.width,
-            tile_height=TILE_HEIGHT,
-            x=10
-        )
+    files = [
+        open("/bmps/N0A.bmp", "rb"),
+        open("/bmps/N1A.bmp", "rb"),
+        open("/bmps/N2A.bmp", "rb"),
+        open("/bmps/N3A.bmp", "rb"),
+        open("/bmps/N4A.bmp", "rb"),
+        open("/bmps/N5A.bmp", "rb"),
+        open("/bmps/N6A.bmp", "rb"),
+        open("/bmps/N7A.bmp", "rb"),
+        open("/bmps/N9A.bmp", "rb"),
+        open("/bmps/N9A.bmp", "rb"),
+        open("/bmps/CA.bmp", "rb"),
+    ]
 
-        # # CircuitPython 7+ compatible
-        # bitmap = displayio.OnDiskBitmap(filename)
-        # sprite = displayio.TileGrid(
-        #     bitmap,
-        #     pixel_shader=bitmap.pixel_shader,
-        #     tile_width=bitmap.width,
-        #     tile_height=matrix.display.height,
-        # )
+    for index, file in enumerate(files):
+        bitMap = displayio.OnDiskBitmap(file)
+        frameLength = int(bitMap.height / TILE_HEIGHT)
+        sprites[index] = {"file": file, "bitMap": bitMap, "frameLength": frameLength}
 
-        sprite_group.append(sprite)
+    print("width")
+    print(f"sprites[10]['bitMap'].width: {sprites[10]['bitMap'].width}")
+    print(f"sprites[0]['bitMap'].width: {sprites[0]['bitMap'].width}")
+    # for 4 bit time
 
-        current_frame = 0
-        current_loop = 0
-        frame_count = int(bitmap.height / TILE_HEIGHT)
-        print(frame_count)
-        frame_duration = DEFAULT_FRAME_DURATION     
+    sprite0 = displayio.TileGrid(
+        bitmap=sprites[1]["bitMap"],
+        pixel_shader=getattr(
+            sprites[1]["bitMap"], "pixel_shader", displayio.ColorConverter()
+        ),
+        tile_width=sprites[1]["bitMap"].width,
+        tile_height=TILE_HEIGHT,
+        x=1,
+    )
+    sprite1 = displayio.TileGrid(
+        bitmap=sprites[1]["bitMap"],
+        pixel_shader=getattr(
+            sprites[1]["bitMap"], "pixel_shader", displayio.ColorConverter()
+        ),
+        tile_width=sprites[1]["bitMap"].width,
+        tile_height=TILE_HEIGHT,
+        x=15,
+    )
+    spriteCA = displayio.TileGrid(
+        bitmap=sprites[10]["bitMap"],
+        pixel_shader=getattr(
+            sprites[10]["bitMap"], "pixel_shader", displayio.ColorConverter()
+        ),
+        tile_width=sprites[10]["bitMap"].width,
+        tile_height=TILE_HEIGHT,
+        x=28,
+    )
+    sprite2 = displayio.TileGrid(
+        bitmap=sprites[4]["bitMap"],
+        pixel_shader=getattr(
+            sprites[4]["bitMap"], "pixel_shader", displayio.ColorConverter()
+        ),
+        tile_width=sprites[4]["bitMap"].width,
+        tile_height=TILE_HEIGHT,
+        x=35,
+    )
+    sprite3 = displayio.TileGrid(
+        bitmap=sprites[5]["bitMap"],
+        pixel_shader=getattr(
+            sprites[5]["bitMap"], "pixel_shader", displayio.ColorConverter()
+        ),
+        tile_width=sprites[5]["bitMap"].width,
+        tile_height=TILE_HEIGHT,
+        x=49,
+    )
+
+    sprite_group.append(sprite0)
+    sprite_group.append(sprite1)
+    sprite_group.append(sprite2)
+    sprite_group.append(sprite3)
+    sprite_group.append(spriteCA)
+
+    current_frame = 0
+    current_loop = 0
+    frame_count = sprites[10]["frameLength"]
+    frame_duration = DEFAULT_FRAME_DURATION
 
 
 def advance_frame(sprite_group):
     """
     Advance to the next frame and loop back at the end
+
+    TODO: this needs to be change so that is called on each digit not just for the sprite_group
+        - also need to make it so it animates until out of frames some how. each one has a different lenght
     """
     # pylint: disable=global-statement
     global current_frame, current_loop
     current_frame = current_frame + 1
+
     if current_frame >= frame_count:
         current_frame = 0
         current_loop = current_loop + 1
-    sprite_group[0][0] = current_frame
 
-def AnimationTest(sprite_group, display, matrix):
-    
+    # for each tile added to sprite_group advace y section by 1 
+    # if not animated yet this will break things 
+    sprite_group[0][0] = 65
+    sprite_group[1][0] = 65
+    sprite_group[4][0] = 60
+
+
+
+def AnimationTest(sprite_group, display, matrix, network):
     # --- Display setup ---
     matrix.display.show(sprite_group)
 
-    initiate_bmps(sprite_group)
+    initiate_bmps(sprite_group, network.get_local_time())
+    advance_frame(sprite_group)
     while True:
-        advance_frame(sprite_group)
+        # advance_frame(sprite_group)
         time.sleep(frame_duration)

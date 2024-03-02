@@ -10,7 +10,7 @@ from adafruit_matrixportal.network import Network
 BLINK = True
 DEBUG = False
 
-def BasicTest(group, display, matrix):
+def BasicTest(group, display, matrix, network):
 
     # Get wifi details and more from a secrets.py file
     try:
@@ -20,10 +20,6 @@ def BasicTest(group, display, matrix):
         raise
     print("    Metro Minimal Clock")
     print("Time will be set for {}".format(secrets["timezone"]))
-
-    # --- Display setup --
-    network = Network(status_neopixel=board.NEOPIXEL, debug=False)
-
     # --- Drawing setup ---
 
     bitmap = displayio.Bitmap(64, 64, 2)  # Create a bitmap object,width, height, bit depth
